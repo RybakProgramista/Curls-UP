@@ -11,15 +11,26 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody2D playerRgb;
 
     [SerializeField]
-    private float speedMultiplier, jumpMultiplier;
+    private float speedMultiplier, jumpMultiplier, rotateMultiplier;
+    [SerializeField]
+    private bool isGrounded, canMove;
 
     void Start()
     {
-        playerRgb = GetComponent<Rigidbody2D>();    
+        playerRgb = GetComponent<Rigidbody2D>();
+        isGrounded = true;
     }
-    float jumpForce(float jumpForce)
+    public bool getCanMove()
     {
-        if(jumpForce > 0)
+        return canMove;
+    }
+    public void setCanMove(bool canMove)
+    {
+        this.canMove = canMove;
+    }
+    float jumping(float jumpForce)
+    {
+        if(jumpForce > 0 && isGrounded)
         {
             return jumpForce;
         }
@@ -30,9 +41,21 @@ public class PlayerMovement : MonoBehaviour
     }
     void FixedUpdate()
     {
-        float speed = Input.GetAxis("Horizontal") * speedMultiplier;
-        float jumpSpeed = Input.GetAxis("Jump") * jumpMultiplier;
+        if (canMove)
+        {
+            float speed = Input.GetAxis("Horizontal") * speedMultiplier;
+            float jumpForce = Input.GetAxis("Jump") * jumpMultiplier;
 
-        playerRgb.velocity = new Vector2(speed, jumpForce(jumpSpeed));
+            playerRgb.velocity = new Vector2(speed, jumping(jumpForce));
+            spriteT.Rotate(new Vector3(0, 0, 1), speed * Time.deltaTime * rotateMultiplier);
+        }
+    }
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        isGrounded = true;
+    }
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        isGrounded = false;
     }
 }
